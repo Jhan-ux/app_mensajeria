@@ -86,9 +86,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Foto de Perfil (Link / URL Opcional)</label>
+                    <label class="form-label">Foto de Perfil (Link directo a Imagen - Opcional)</label>
                     <input type="url" id="reg-avatar-url" name="avatar_url" class="form-control" placeholder="https://ejemplo.com/mi-foto.jpg" autocomplete="off" oninput="updateAvatarPreview()">
-                    <span style="font-size: 0.72rem; color: #8e897f; margin-top: 4px; display: block;">Pega un enlace web a cualquier imagen o déjalo vacío para usar un avatar anónimo.</span>
+                    <span style="font-size: 0.72rem; color: #8e897f; margin-top: 4px; display: block;">Usa un enlace directo a una imagen (.jpg, .png, etc.). Si lo dejas vacío, se genera un robot anónimo.</span>
                 </div>
 
                 <div class="form-group">

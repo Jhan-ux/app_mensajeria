@@ -286,9 +286,9 @@
                 <input type="text" id="profile-edit-status" class="form-control" placeholder="ej: En misión confidencial">
             </div>
             <div class="form-group">
-                <label class="form-label">Foto de Perfil (Link / URL de Imagen)</label>
+                <label class="form-label">Foto de Perfil (Link directo a Imagen)</label>
                 <input type="url" id="profile-edit-avatar-url" class="form-control" placeholder="https://ejemplo.com/mi-foto.jpg" oninput="app.updateProfileModalAvatarPreview()">
-                <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; display: block;">Pega un enlace web a cualquier foto o imagen.</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; display: block;">Debe ser un enlace directo a una imagen (que termine en .jpg, .png o de Unsplash/Imgur). Si falla, usará el robot automático.</span>
             </div>
             <div class="form-group">
                 <label class="form-label">O generar Robot con Palabra Clave (Semilla)</label>

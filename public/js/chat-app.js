@@ -88,7 +88,12 @@ class AnonymousChatApp {
         const nameEl = document.getElementById('user-header-name');
         const handleEl = document.getElementById('user-header-handle');
         
-        if (avatarEl) avatarEl.src = this.currentUser.avatar_url;
+        if (avatarEl) {
+            avatarEl.src = this.currentUser.avatar_url;
+            avatarEl.onerror = () => {
+                avatarEl.src = 'https://api.dicebear.com/7.x/bottts-neutral/svg?seed=' + encodeURIComponent(this.currentUser.username || 'user');
+            };
+        }
         if (nameEl) nameEl.textContent = this.currentUser.name;
         if (handleEl) handleEl.textContent = `@${this.currentUser.username}`;
 
@@ -100,7 +105,12 @@ class AnonymousChatApp {
         if (profName) profName.value = this.currentUser.display_name || this.currentUser.username;
         if (profStatus) profStatus.value = this.currentUser.status_message || '';
         if (profAvatarUrl) profAvatarUrl.value = (this.currentUser.avatar && this.currentUser.avatar.startsWith('http')) ? this.currentUser.avatar : '';
-        if (profPreview) profPreview.src = this.currentUser.avatar_url;
+        if (profPreview) {
+            profPreview.src = this.currentUser.avatar_url;
+            profPreview.onerror = () => {
+                profPreview.src = 'https://api.dicebear.com/7.x/bottts-neutral/svg?seed=' + encodeURIComponent(this.currentUser.username || 'user');
+            };
+        }
     }
 
     async loadConversations() {
@@ -154,7 +164,7 @@ class AnonymousChatApp {
                 return `
                     <div class="conversation-item ${isActive ? 'active' : ''}" onclick="app.selectConversation(${conv.id})">
                         <div class="avatar-wrapper">
-                            <img src="${conv.avatar}" alt="Avatar" class="avatar-img">
+                            <img src="${conv.avatar}" alt="Avatar" class="avatar-img" onerror="this.onerror=null; this.src='https://api.dicebear.com/7.x/bottts-neutral/svg?seed=' + encodeURIComponent('${this.escapeHtml(conv.title || 'user')}');">
                             ${conv.type === 'direct' ? `<span class="badge ${isOnline ? 'badge-online' : 'badge-offline'} status-dot"></span>` : ''}
                         </div>
                         <div class="conversation-info">
@@ -214,7 +224,7 @@ class AnonymousChatApp {
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                 </button>
                 <div class="avatar-wrapper" style="width: 44px; height: 44px;">
-                    <img src="${conv.avatar}" alt="Avatar" class="avatar-img">
+                    <img src="${conv.avatar}" alt="Avatar" class="avatar-img" onerror="this.onerror=null; this.src='https://api.dicebear.com/7.x/bottts-neutral/svg?seed=' + encodeURIComponent('${this.escapeHtml(conv.title || 'user')}');">
                     ${conv.type === 'direct' ? `<span class="badge ${isOnline ? 'badge-online' : 'badge-offline'} status-dot"></span>` : ''}
                 </div>
                 <div>
@@ -312,7 +322,7 @@ class AnonymousChatApp {
 
             return `
                 <div class="message-row ${isMe ? 'outgoing' : 'incoming'}" id="msg-bubble-${msg.id}">
-                    ${!isMe ? `<img src="${msg.sender.avatar_url}" alt="${msg.sender.name}" class="avatar-img" style="width: 32px; height: 32px; border-radius: 50%; align-self: flex-end;">` : ''}
+                    ${!isMe ? `<img src="${msg.sender.avatar_url}" alt="${this.escapeHtml(msg.sender.name)}" class="avatar-img" style="width: 32px; height: 32px; border-radius: 50%; align-self: flex-end;" onerror="this.onerror=null; this.src='https://api.dicebear.com/7.x/bottts-neutral/svg?seed=' + encodeURIComponent('${this.escapeHtml(msg.sender.username || 'user')}');">` : ''}
                     <div class="message-bubble">
                         ${!isMe ? `<div class="message-sender-tag">@${this.escapeHtml(msg.sender.username)}</div>` : ''}
                         ${contentHtml}
@@ -703,7 +713,7 @@ class AnonymousChatApp {
                 resultsEl.innerHTML = data.users.map(u => `
                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--bg-surface-elevated); border-radius: var(--radius-md); margin-bottom: 8px;">
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <img src="${u.avatar_url}" style="width: 38px; height: 38px; border-radius: 50%;">
+                            <img src="${u.avatar_url}" style="width: 38px; height: 38px; border-radius: 50%;" onerror="this.onerror=null; this.src='https://api.dicebear.com/7.x/bottts-neutral/svg?seed=' + encodeURIComponent('${this.escapeHtml(u.username || 'user')}');">
                             <div>
                                 <div style="font-weight: 700; font-size: 0.9rem;">${this.escapeHtml(u.name)}</div>
                                 <div style="font-size: 0.75rem; color: var(--accent-primary); font-family: var(--font-mono);">@${this.escapeHtml(u.username)}</div>
