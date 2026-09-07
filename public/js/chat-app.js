@@ -27,11 +27,17 @@ class AnonymousChatApp {
         // Polling fallback interval
         this.pollingInterval = null;
 
+        // PWA e Instalación
+        this.deferredInstallPrompt = null;
+        this.notificationsEnabled = localStorage.getItem('enigma_notifs_enabled') === 'true';
+
         this.init();
     }
 
     async init() {
         this.setupCSRF();
+        this.setupPWA();
+        this.updateNotificationUI();
         await this.loadCurrentUser();
         await this.loadConversations();
         this.setupEventListeners();
@@ -452,6 +458,12 @@ class AnonymousChatApp {
                         this.scrollToBottom();
                         // Marcar leído
                         this.request(`/api/conversations/${conversationId}/read`, { method: 'POST' });
+                        
+                        // Si la ventana está en segundo plano, notificar
+                        if (document.hidden) {
+                            this.playNotificationSound();
+                            this.showSystemNotification(e.message);
+                        }
                     }
                 }
             })
@@ -470,10 +482,16 @@ class AnonymousChatApp {
             if (this.activeConversationId !== msg.conversation_id) {
                 conv.unread_count = (conv.unread_count || 0) + 1;
                 this.playNotificationSound();
+                this.showSystemNotification(msg);
+            } else if (document.hidden) {
+                this.playNotificationSound();
+                this.showSystemNotification(msg);
             }
             this.renderConversationsList();
         } else {
             this.loadConversations();
+            this.playNotificationSound();
+            this.showSystemNotification(msg);
         }
     }
 
@@ -838,6 +856,138 @@ class AnonymousChatApp {
         if (bytes < 1024) return bytes + ' B';
         if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
         return (bytes / 1048576).toFixed(1) + ' MB';
+    }
+
+    // =========================================================================
+    // PWA INSTALACIÓN Y NOTIFICACIONES
+    // =========================================================================
+    setupPWA() {
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            this.deferredInstallPrompt = e;
+        });
+
+        window.addEventListener('appinstalled', () => {
+            this.deferredInstallPrompt = null;
+            console.log('Enigma instalada con éxito en el dispositivo');
+        });
+    }
+
+    promptInstallPwa() {
+        if (this.deferredInstallPrompt) {
+            this.deferredInstallPrompt.prompt();
+            this.deferredInstallPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('Usuario instaló la app Enigma');
+                }
+                this.deferredInstallPrompt = null;
+            });
+        } else {
+            this.openModal('modal-install-guide');
+        }
+    }
+
+    triggerNativePwaInstall() {
+        if (this.deferredInstallPrompt) {
+            this.promptInstallPwa();
+            this.closeModal('modal-install-guide');
+        } else {
+            alert('Para instalar en este navegador:\n\n• En PC/Mac: Haz clic en el icono de instalación ⊕ en la barra de direcciones o Menú ⋮ > Instalar Enigma.\n• En Android: Menú ⋮ > Instalar aplicación.\n• En iPhone (Safari): Botón Compartir ⎋ > Agregar a pantalla de inicio.');
+        }
+    }
+
+    openModal(id) {
+        document.getElementById(id)?.classList.add('open');
+    }
+
+    async toggleNotifications() {
+        if (!('Notification' in window)) {
+            alert('Tu navegador no soporta notificaciones web de escritorio.');
+            return;
+        }
+
+        if (Notification.permission === 'default') {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                this.notificationsEnabled = true;
+                localStorage.setItem('enigma_notifs_enabled', 'true');
+                this.showSystemNotification({
+                    sender: { name: 'Enigma' },
+                    body: 'Notificaciones seguras activadas con éxito.'
+                });
+            } else {
+                this.notificationsEnabled = false;
+                localStorage.setItem('enigma_notifs_enabled', 'false');
+            }
+        } else if (Notification.permission === 'granted') {
+            this.notificationsEnabled = !this.notificationsEnabled;
+            localStorage.setItem('enigma_notifs_enabled', this.notificationsEnabled ? 'true' : 'false');
+            if (this.notificationsEnabled) {
+                this.showSystemNotification({
+                    sender: { name: 'Enigma' },
+                    body: 'Notificaciones reactivadas.'
+                });
+            }
+        } else if (Notification.permission === 'denied') {
+            alert('Las notificaciones están bloqueadas en tu navegador. Puedes activarlas haciendo clic en el icono del candado en la barra de direcciones.');
+            this.notificationsEnabled = false;
+            localStorage.setItem('enigma_notifs_enabled', 'false');
+        }
+
+        this.updateNotificationUI();
+    }
+
+    updateNotificationUI() {
+        const iconOn = document.getElementById('icon-notif-on');
+        const iconOff = document.getElementById('icon-notif-off');
+        const btn = document.getElementById('btn-notification-toggle');
+
+        const isGrantedAndActive = ('Notification' in window) && Notification.permission === 'granted' && this.notificationsEnabled;
+
+        if (iconOn && iconOff) {
+            if (isGrantedAndActive) {
+                iconOn.classList.remove('hidden');
+                iconOff.classList.add('hidden');
+                if (btn) btn.title = 'Notificaciones activadas (clic para silenciar)';
+            } else {
+                iconOn.classList.add('hidden');
+                iconOff.classList.remove('hidden');
+                if (btn) btn.title = 'Notificaciones silenciadas (clic para activar)';
+            }
+        }
+    }
+
+    showSystemNotification(msg) {
+        if (!('Notification' in window) || Notification.permission !== 'granted' || !this.notificationsEnabled) {
+            return;
+        }
+
+        const senderName = msg.sender?.name || msg.sender?.username || 'Usuario';
+        let bodyText = 'Nuevo mensaje en canal seguro';
+        if (msg.type === 'audio') bodyText = 'Nota de voz enviada';
+        else if (msg.type === 'image') bodyText = 'Imagen compartida';
+        else if (msg.type === 'document') bodyText = 'Documento: ' + (msg.file_name || 'Archivo adjunto');
+        else if (msg.body) bodyText = msg.body.length > 70 ? msg.body.substring(0, 70) + '...' : msg.body;
+
+        try {
+            const notif = new Notification(`Enigma · @${this.escapeHtml(msg.sender?.username || senderName)}`, {
+                body: bodyText,
+                icon: '/images/logo.png',
+                badge: '/images/logo.png',
+                tag: `enigma-msg-${msg.conversation_id || 'main'}`,
+                renotify: true
+            });
+
+            notif.onclick = () => {
+                window.focus();
+                if (msg.conversation_id) {
+                    this.selectConversation(msg.conversation_id);
+                }
+                notif.close();
+            };
+        } catch (e) {
+            console.log('Error enviando notificación del sistema:', e);
+        }
     }
 
     escapeHtml(text) {

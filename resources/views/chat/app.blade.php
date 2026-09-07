@@ -30,9 +30,33 @@
             </div>
 
             <div style="display: flex; align-items: center; gap: 4px;">
+                <!-- Botón Notificaciones -->
+                <button type="button" id="btn-notification-toggle" class="btn-icon" onclick="app.toggleNotifications()" title="Activar / Desactivar notificaciones">
+                    <svg id="icon-notif-on" class="hidden" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--color-nude)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    <svg id="icon-notif-off" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        <path d="M18.63 13A17.89 17.89 0 0 1 18 8"/>
+                        <path d="M6.26 6.26A5.86 5.86 0 0 0 6 8c0 7-3 9-3 9h14"/>
+                        <path d="M18 8a6 6 0 0 0-9.33-5"/>
+                        <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                </button>
+
+                <!-- Botón Instalar / Descargar App (PWA) -->
+                <button type="button" id="btn-install-pwa" class="btn-icon" onclick="app.promptInstallPwa()" title="Descargar / Instalar aplicación Enigma">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                </button>
+
                 <!-- Botón Nuevo Chat Directo -->
                 <button class="btn-icon" onclick="app.openNewChatModal()" title="Nuevo chat directo por @username">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                         <line x1="12" y1="8" x2="12" y2="14"/>
                         <line x1="9" y1="11" x2="15" y2="11"/>
@@ -41,7 +65,7 @@
 
                 <!-- Botón Nuevo Grupo -->
                 <button class="btn-icon" onclick="app.openNewGroupModal()" title="Crear grupo anónimo">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                         <circle cx="9" cy="7" r="4"/>
                         <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
@@ -282,6 +306,44 @@
 <div id="modal-image-preview" class="modal-backdrop" onclick="app.closeModal('modal-image-preview')">
     <div style="position: relative; max-width: 90vw; max-height: 90vh;">
         <img id="modal-preview-img" src="" alt="Zoom" style="max-width: 100%; max-height: 85vh; border-radius: 12px; box-shadow: 0 16px 40px rgba(0,0,0,0.8);">
+    </div>
+</div>
+
+<!-- Modal: Descargar / Instalar Aplicación Enigma -->
+<div id="modal-install-guide" class="modal-backdrop">
+    <div class="modal-content" style="max-width: 440px;">
+        <div class="modal-header">
+            <h3 class="modal-title">Descargar Enigma</h3>
+            <button class="btn-icon" onclick="app.closeModal('modal-install-guide')">✕</button>
+        </div>
+        <div class="modal-body" style="text-align: center;">
+            <div style="margin: 0 auto 12px; display: flex; align-items: center; justify-content: center;">
+                <img src="{{ asset('images/logo.png') }}" alt="Enigma Logo" style="height: 68px; width: auto; filter: drop-shadow(0 0 18px rgba(227, 219, 204, 0.25));">
+            </div>
+            <h4 style="color: var(--color-off-white); font-size: 1.15rem; margin-bottom: 6px; letter-spacing: 0.04em;">Instalar en tu Dispositivo</h4>
+            <p style="font-size: 0.85rem; color: var(--color-nude); margin-bottom: 18px; opacity: 0.9; line-height: 1.5;">
+                Instala Enigma como una aplicación de escritorio o móvil nativa para recibir notificaciones instantáneas y abrir tus chats con un solo clic.
+            </p>
+
+            <div id="pwa-native-install-box" style="margin-bottom: 16px;">
+                <button type="button" class="btn btn-primary" style="width: 100%; padding: 13px; font-size: 0.95rem; justify-content: center; gap: 8px;" onclick="app.triggerNativePwaInstall()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    <span>Instalar Aplicación Ahora</span>
+                </button>
+            </div>
+
+            <div style="background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px 16px; text-align: left; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6;">
+                <div style="font-weight: 700; color: var(--color-nude); margin-bottom: 4px; font-size: 0.825rem;">Otras formas de instalación:</div>
+                <ul style="margin: 0; padding-left: 16px;">
+                    <li><strong>Chrome / Edge (PC/Mac):</strong> Pulsa el icono ⊕ en la barra de direcciones o Menú ⋮ &gt; <em>Instalar Enigma</em>.</li>
+                    <li><strong>Android:</strong> Pulsa Menú ⋮ &gt; <em>Instalar Aplicación</em> o <em>Agregar a pantalla de inicio</em>.</li>
+                    <li><strong>iPhone / iPad (Safari):</strong> Pulsa el botón Compartir ⎋ &gt; <em>Agregar a pantalla de inicio</em>.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="app.closeModal('modal-install-guide')">Cerrar</button>
+        </div>
     </div>
 </div>
 @endsection

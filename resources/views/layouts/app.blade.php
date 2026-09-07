@@ -7,6 +7,13 @@
     <title>{{ config('app.name', 'Enigma') }} — @yield('title', 'Secure Messaging')</title>
     <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     
+    <meta name="theme-color" content="#101010">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Enigma">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo.png') }}">
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,6 +26,17 @@
 </head>
 <body class="bg-dark text-light antialiased font-sans">
     @yield('content')
+
+    <!-- Registro de Service Worker para PWA y Notificaciones -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => {
+                    console.log('Service Worker registro opcional:', err);
+                });
+            });
+        }
+    </script>
 
     <!-- Scripts compartidos -->
     @yield('scripts')
