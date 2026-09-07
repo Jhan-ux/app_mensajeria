@@ -11,6 +11,10 @@ Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login')->name('login.submit');
     Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:register')->name('register.submit');
+
+    // Recuperación de cuenta mediante preguntas de seguridad
+    Route::post('/recovery/questions', [AuthController::class, 'getRecoveryQuestions'])->middleware('throttle:recovery')->name('recovery.questions');
+    Route::post('/recovery/reset', [AuthController::class, 'resetPasswordWithSecurityQuestions'])->middleware('throttle:recovery')->name('recovery.reset');
 });
 
 // Authenticated Routes

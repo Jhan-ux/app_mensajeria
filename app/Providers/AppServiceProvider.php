@@ -56,5 +56,16 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('search', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
+
+        // 5. Protección contra fuerza bruta en recuperación de cuenta (5 intentos/minuto por usuario + IP)
+        RateLimiter::for('recovery', function (Request $request) {
+            $username = Str::transliterate(Str::lower($request->input('username', '')));
+
+            return Limit::perMinute(5)->by($username.'|'.$request->ip())->response(function () {
+                return response()->json([
+                    'message' => 'Demasiados intentos de recuperación. Por favor, espera 1 minuto.',
+                ], 429);
+            });
+        });
     }
 }
