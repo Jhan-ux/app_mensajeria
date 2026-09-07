@@ -85,11 +85,12 @@
         
         <!-- Estado Vacío (Ningún chat seleccionado) -->
         <div id="empty-chat-state" class="empty-chat-state">
-            <div class="empty-icon-shield">
-                <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <div style="margin-bottom: 16px; display: flex; align-items: center; justify-content: center;">
+                <img src="{{ asset('images/logo.png') }}" alt="Enigma Logo" style="height: 100px; width: auto; max-width: 220px; object-fit: contain; filter: drop-shadow(0 0 24px rgba(227, 219, 204, 0.25));">
             </div>
-            <h2 class="brand-title" style="font-size: 1.75rem; color: var(--color-off-white); margin-bottom: 8px;">Mensajería Anónima Encriptada</h2>
-            <p style="max-width: 380px; font-size: 0.9rem; line-height: 1.6; color: var(--color-nude); opacity: 0.85;">
+            <h2 class="brand-title" style="font-size: 1.85rem; color: var(--color-off-white); margin-bottom: 4px; letter-spacing: 0.06em; text-transform: uppercase;">Enigma</h2>
+            <p style="font-size: 0.8rem; color: var(--color-nude); margin-bottom: 12px; opacity: 0.9; letter-spacing: 0.05em; font-weight: 600;">SECURE ANONYMOUS MESSAGING</p>
+            <p style="max-width: 380px; font-size: 0.9rem; line-height: 1.6; color: var(--text-muted);">
                 Selecciona una conversación del panel lateral o pulsa el botón <strong>+</strong> para iniciar un chat privado buscando por <strong>@username</strong>.
             </p>
         </div>

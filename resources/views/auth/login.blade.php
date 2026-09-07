@@ -8,16 +8,12 @@
     <div style="width: 100%; max-width: 440px; background: #151515; border: 1px solid rgba(227, 219, 204, 0.14); border-radius: 20px; box-shadow: 0 24px 48px rgba(0,0,0,0.7); overflow: hidden; backdrop-filter: blur(16px);">
         
         <!-- Header Banner -->
-        <div style="padding: 36px 28px 26px; text-align: center; border-bottom: 1px solid rgba(227, 219, 204, 0.1); background: rgba(227, 219, 204, 0.02);">
-            <div style="width: 68px; height: 68px; margin: 0 auto 16px; border-radius: 50%; background: #1c1c1c; border: 1.5px solid #E3DBCC; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 24px rgba(227, 219, 204, 0.15);">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#E3DBCC" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                    <path d="M12 8v4"/>
-                    <path d="M12 16h.01"/>
-                </svg>
+        <div style="padding: 30px 28px 22px; text-align: center; border-bottom: 1px solid rgba(227, 219, 204, 0.1); background: rgba(227, 219, 204, 0.02);">
+            <div style="margin: 0 auto 10px; display: flex; align-items: center; justify-content: center;">
+                <img src="{{ asset('images/logo.png') }}" alt="Enigma Logo" style="height: 76px; width: auto; max-width: 170px; object-fit: contain; filter: drop-shadow(0 0 20px rgba(227, 219, 204, 0.25));">
             </div>
-            <h1 class="brand-title" style="font-size: 1.85rem; color: #FDFCF8; margin-bottom: 6px;">Mensajería Anónima</h1>
-            <p style="font-size: 0.875rem; color: #E3DBCC; opacity: 0.85;">Canales encriptados en tiempo real. Cero correos, cero rastreo.</p>
+            <h1 class="brand-title" style="font-size: 2rem; color: #FDFCF8; margin-bottom: 4px; letter-spacing: 0.06em; text-transform: uppercase;">Enigma</h1>
+            <p style="font-size: 0.825rem; color: #E3DBCC; opacity: 0.85; letter-spacing: 0.03em;">Secure Anonymous Messaging · Canales encriptados</p>
         </div>
 
         <!-- Tab Selector -->
