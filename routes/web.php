@@ -35,6 +35,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/heartbeat', [UserController::class, 'heartbeat'])->name('api.heartbeat');
         Route::get('/users/search', [UserController::class, 'search'])->middleware('throttle:search')->name('api.users.search');
         Route::post('/profile', [UserController::class, 'updateProfile'])->name('api.profile.update');
+        Route::post('/security-questions', [UserController::class, 'updateSecurityQuestions'])->name('api.security.update');
 
         Route::get('/conversations', [ConversationController::class, 'index'])->name('api.conversations.index');
         Route::post('/conversations', [ConversationController::class, 'store'])->name('api.conversations.store');

@@ -111,6 +111,16 @@ class AnonymousChatApp {
                 profPreview.src = 'https://api.dicebear.com/7.x/bottts-neutral/svg?seed=' + encodeURIComponent(this.currentUser.username || 'user');
             };
         }
+
+        // Aviso / Banner de respaldo de cuenta pendiente
+        const bannerEl = document.getElementById('security-backup-alert-banner');
+        if (bannerEl) {
+            if (this.currentUser.has_security_questions) {
+                bannerEl.classList.add('hidden');
+            } else {
+                bannerEl.classList.remove('hidden');
+            }
+        }
     }
 
     async loadConversations() {
@@ -666,18 +676,178 @@ class AnonymousChatApp {
         document.getElementById('modal-new-group')?.classList.add('open');
     }
 
+    openSettingsModal(tab = 'profile') {
+        this.populateSecurityQuestionsSelects();
+        this.updateSecurityStatusBox();
+        this.switchSettingsTab(tab);
+
+        // Limpiar alertas previas
+        const alertEl = document.getElementById('settings-security-alert');
+        if (alertEl) alertEl.classList.add('hidden');
+
+        document.getElementById('modal-settings')?.classList.add('open');
+    }
+
     openProfileModal() {
-        if (this.currentUser) {
-            const profName = document.getElementById('profile-edit-name');
-            const profStatus = document.getElementById('profile-edit-status');
-            const profAvatarUrl = document.getElementById('profile-edit-avatar-url');
-            const profPreview = document.getElementById('profile-edit-avatar-preview');
-            if (profName) profName.value = this.currentUser.display_name || this.currentUser.username;
-            if (profStatus) profStatus.value = this.currentUser.status_message || '';
-            if (profAvatarUrl) profAvatarUrl.value = (this.currentUser.avatar && this.currentUser.avatar.startsWith('http')) ? this.currentUser.avatar : '';
-            if (profPreview) profPreview.src = this.currentUser.avatar_url;
+        this.openSettingsModal('profile');
+    }
+
+    switchSettingsTab(tab) {
+        const tabProfile = document.getElementById('settings-tab-profile');
+        const tabSecurity = document.getElementById('settings-tab-security');
+        const btnProfile = document.getElementById('tab-settings-profile-btn');
+        const btnSecurity = document.getElementById('tab-settings-security-btn');
+
+        if (tab === 'security') {
+            if (tabProfile) tabProfile.style.display = 'none';
+            if (tabSecurity) tabSecurity.style.display = 'block';
+            if (btnProfile) {
+                btnProfile.style.color = 'var(--text-muted)';
+                btnProfile.style.borderBottom = '2px solid transparent';
+            }
+            if (btnSecurity) {
+                btnSecurity.style.color = 'var(--color-nude)';
+                btnSecurity.style.borderBottom = '2px solid var(--color-nude)';
+            }
+        } else {
+            if (tabProfile) tabProfile.style.display = 'block';
+            if (tabSecurity) tabSecurity.style.display = 'none';
+            if (btnProfile) {
+                btnProfile.style.color = 'var(--color-nude)';
+                btnProfile.style.borderBottom = '2px solid var(--color-nude)';
+            }
+            if (btnSecurity) {
+                btnSecurity.style.color = 'var(--text-muted)';
+                btnSecurity.style.borderBottom = '2px solid transparent';
+            }
         }
-        document.getElementById('modal-profile-edit')?.classList.add('open');
+    }
+
+    populateSecurityQuestionsSelects() {
+        const q1Select = document.getElementById('settings-security-q1');
+        const q2Select = document.getElementById('settings-security-q2');
+        const questions = window.SECURITY_QUESTIONS || [];
+
+        if (q1Select && questions.length > 0 && q1Select.options.length <= 1) {
+            questions.forEach(q => {
+                const opt = document.createElement('option');
+                opt.value = q;
+                opt.textContent = q;
+                q1Select.appendChild(opt);
+            });
+        }
+
+        if (q2Select && questions.length > 0 && q2Select.options.length <= 1) {
+            questions.forEach(q => {
+                const opt = document.createElement('option');
+                opt.value = q;
+                opt.textContent = q;
+                q2Select.appendChild(opt);
+            });
+        }
+    }
+
+    updateSecurityStatusBox() {
+        const box = document.getElementById('settings-security-status-box');
+        if (!box) return;
+
+        if (this.currentUser?.has_security_questions) {
+            box.style.background = 'rgba(78, 201, 176, 0.1)';
+            box.style.border = '1px solid rgba(78, 201, 176, 0.3)';
+            box.style.color = 'var(--color-off-white)';
+            box.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px; color: #4EC9B0; font-weight: 700; margin-bottom: 3px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>Respaldo de cuenta activo</span>
+                </div>
+                <div style="color: var(--text-secondary); font-size: 0.78rem;">Tus preguntas de seguridad están configuradas. Puedes actualizarlas cuando lo desees en el formulario inferior.</div>
+            `;
+        } else {
+            box.style.background = 'rgba(229, 192, 123, 0.1)';
+            box.style.border = '1px solid rgba(229, 192, 123, 0.3)';
+            box.style.color = 'var(--color-off-white)';
+            box.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px; color: var(--accent-warning); font-weight: 700; margin-bottom: 3px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <span>Sin respaldo configurado</span>
+                </div>
+                <div style="color: var(--text-secondary); font-size: 0.78rem;">Es altamente recomendado configurar tus preguntas de seguridad para garantizar que nunca pierdas el acceso a tu cuenta.</div>
+            `;
+        }
+    }
+
+    async saveSecurityQuestions() {
+        const q1 = document.getElementById('settings-security-q1')?.value;
+        const a1 = (document.getElementById('settings-security-a1')?.value || '').trim();
+        const q2 = document.getElementById('settings-security-q2')?.value;
+        const a2 = (document.getElementById('settings-security-a2')?.value || '').trim();
+        const alertEl = document.getElementById('settings-security-alert');
+        const btn = document.getElementById('btn-save-security');
+
+        const showAlert = (msg, isSuccess = false) => {
+            if (!alertEl) return;
+            alertEl.classList.remove('hidden');
+            alertEl.style.background = isSuccess ? 'rgba(78, 201, 176, 0.15)' : 'rgba(224, 108, 117, 0.15)';
+            alertEl.style.border = isSuccess ? '1px solid #4EC9B0' : '1px solid var(--accent-danger)';
+            alertEl.style.color = isSuccess ? '#4EC9B0' : 'var(--accent-danger)';
+            alertEl.textContent = msg;
+        };
+
+        if (!q1 || !a1 || !q2 || !a2) {
+            showAlert('Por favor completa las 2 preguntas y sus respuestas.');
+            return;
+        }
+
+        if (q1 === q2) {
+            showAlert('Las dos preguntas de seguridad deben ser diferentes.');
+            return;
+        }
+
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Guardando...';
+        }
+
+        try {
+            const res = await this.request('/api/security-questions', {
+                method: 'POST',
+                body: {
+                    security_question_1: q1,
+                    security_answer_1: a1,
+                    security_question_2: q2,
+                    security_answer_2: a2
+                }
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                if (this.currentUser) {
+                    this.currentUser = { ...this.currentUser, ...data.user, has_security_questions: true };
+                }
+                this.renderUserProfileHeader();
+                this.updateSecurityStatusBox();
+                showAlert('Preguntas de recuperación guardadas exitosamente.', true);
+
+                const inpA1 = document.getElementById('settings-security-a1');
+                const inpA2 = document.getElementById('settings-security-a2');
+                if (inpA1) inpA1.value = '';
+                if (inpA2) inpA2.value = '';
+
+                setTimeout(() => {
+                    alertEl?.classList.add('hidden');
+                    this.closeModal('modal-settings');
+                }, 1300);
+            } else {
+                showAlert(data.message || 'Error al guardar preguntas de seguridad.');
+            }
+        } catch (e) {
+            showAlert('Error de conexión al guardar preguntas.');
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = 'Guardar Respaldo';
+            }
+        }
     }
 
     updateProfileModalAvatarPreview() {
@@ -818,6 +988,7 @@ class AnonymousChatApp {
                 const data = await res.json();
                 this.currentUser = { ...this.currentUser, ...data.user };
                 this.renderUserProfileHeader();
+                this.closeModal('modal-settings');
                 this.closeModal('modal-profile-edit');
                 await this.loadConversations();
             } else {

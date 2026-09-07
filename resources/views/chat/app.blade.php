@@ -18,7 +18,7 @@
         
         <!-- Header del usuario autenticado -->
         <div class="sidebar-header">
-            <div class="user-profile-badge" onclick="app.openProfileModal()" title="Editar mi perfil anónimo">
+            <div class="user-profile-badge" onclick="app.openSettingsModal('profile')" title="Ver mi perfil y ajustes">
                 <div class="avatar-wrapper">
                     <img id="user-header-avatar" src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=user" alt="Avatar" class="avatar-img">
                     <span class="badge badge-online status-dot"></span>
@@ -30,6 +30,14 @@
             </div>
 
             <div style="display: flex; align-items: center; gap: 4px;">
+                <!-- Botón Ajustes & Seguridad -->
+                <button type="button" id="btn-settings-toggle" class="btn-icon" onclick="app.openSettingsModal('security')" title="Ajustes y Preguntas de Seguridad">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                </button>
+
                 <!-- Botón Notificaciones -->
                 <button type="button" id="btn-notification-toggle" class="btn-icon" onclick="app.toggleNotifications()" title="Activar / Desactivar notificaciones">
                     <svg id="icon-notif-on" class="hidden" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--color-nude)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -92,6 +100,21 @@
             <div class="search-input-wrapper">
                 <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                 <input type="text" id="sidebar-search-input" class="form-control search-input" placeholder="Filtrar chats o contactos...">
+            </div>
+        </div>
+
+        <!-- Banner de aviso: Sin respaldo de cuenta -->
+        <div id="security-backup-alert-banner" class="hidden" style="margin: 6px 10px 2px; padding: 10px 12px; background: rgba(229, 192, 123, 0.08); border: 1px solid rgba(229, 192, 123, 0.3); border-radius: 12px; font-size: 0.8rem;">
+            <div style="display: flex; align-items: flex-start; gap: 8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-warning)" stroke-width="2" style="flex-shrink: 0; margin-top: 1px;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <div style="flex: 1;">
+                    <div style="font-weight: 700; color: #FDFCF8; margin-bottom: 2px;">Respaldo de cuenta pendiente</div>
+                    <div style="color: #E3DBCC; opacity: 0.85; line-height: 1.35; font-size: 0.76rem;">Configura tus 2 preguntas de seguridad para poder recuperar tu acceso si olvidas tu contraseña.</div>
+                    <button type="button" class="btn btn-primary" style="margin-top: 8px; padding: 4px 10px; font-size: 0.75rem;" onclick="app.openSettingsModal('security')">
+                        Configurar Preguntas
+                    </button>
+                </div>
+                <button type="button" class="btn-icon" style="width: 20px; height: 20px; font-size: 0.75rem; color: var(--text-muted);" onclick="document.getElementById('security-backup-alert-banner').classList.add('hidden')" title="Ocultar aviso">✕</button>
             </div>
         </div>
 
@@ -263,41 +286,103 @@
     </div>
 </div>
 
-<!-- Modal: Editar Perfil Anónimo -->
-<div id="modal-profile-edit" class="modal-backdrop">
-    <div class="modal-content">
+<!-- Modal: Ajustes de Cuenta y Seguridad (Perfil + Preguntas de Respaldo) -->
+<div id="modal-settings" class="modal-backdrop">
+    <div class="modal-content" style="max-width: 480px;">
         <div class="modal-header">
-            <h3 class="modal-title">Mi Perfil Anónimo</h3>
-            <button class="btn-icon" onclick="app.closeModal('modal-profile-edit')">✕</button>
+            <h3 class="modal-title">Ajustes & Seguridad</h3>
+            <button class="btn-icon" onclick="app.closeModal('modal-settings')">✕</button>
         </div>
-        <div class="modal-body">
-            <!-- Preview del Avatar en tiempo real -->
-            <div style="text-align: center; margin-bottom: 18px;">
-                <img id="profile-edit-avatar-preview" src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=user" alt="Avatar" style="width: 72px; height: 72px; border-radius: 50%; background: #1c1c1c; border: 2px solid var(--color-nude); box-shadow: 0 0 16px rgba(227, 219, 204, 0.2); object-fit: cover;">
-                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Previsualización de tu foto o avatar</div>
+        
+        <!-- Tab selector de ajustes -->
+        <div style="display: flex; border-bottom: 1px solid var(--border-subtle); background: var(--bg-surface-elevated);">
+            <button id="tab-settings-profile-btn" type="button" class="btn" style="flex: 1; border-radius: 0; background: transparent; color: var(--color-nude); border-bottom: 2px solid var(--color-nude); font-size: 0.85rem;" onclick="app.switchSettingsTab('profile')">
+                Mi Perfil
+            </button>
+            <button id="tab-settings-security-btn" type="button" class="btn" style="flex: 1; border-radius: 0; background: transparent; color: var(--text-muted); border-bottom: 2px solid transparent; font-size: 0.85rem;" onclick="app.switchSettingsTab('security')">
+                Preguntas de Respaldo
+            </button>
+        </div>
+
+        <div class="modal-body" style="max-height: 72vh; overflow-y: auto;">
+            
+            <!-- TAB 1: PERFIL ANÓNIMO -->
+            <div id="settings-tab-profile">
+                <!-- Preview del Avatar en tiempo real -->
+                <div style="text-align: center; margin-bottom: 18px;">
+                    <img id="profile-edit-avatar-preview" src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=user" alt="Avatar" style="width: 72px; height: 72px; border-radius: 50%; background: #1c1c1c; border: 2px solid var(--color-nude); box-shadow: 0 0 16px rgba(227, 219, 204, 0.2); object-fit: cover;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Previsualización de tu foto o avatar</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Apodo / Nombre Visible</label>
+                    <input type="text" id="profile-edit-name" class="form-control" placeholder="Tu alias">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Mensaje de Estado</label>
+                    <input type="text" id="profile-edit-status" class="form-control" placeholder="ej: En misión confidencial">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Foto de Perfil (Link directo a Imagen)</label>
+                    <input type="url" id="profile-edit-avatar-url" class="form-control" placeholder="https://ejemplo.com/mi-foto.jpg" oninput="app.updateProfileModalAvatarPreview()">
+                    <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; display: block;">Debe ser un enlace directo a una imagen (.jpg, .png). Si falla, usará el robot automático.</span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">O generar Robot con Palabra Clave (Semilla)</label>
+                    <input type="text" id="profile-edit-seed" class="form-control" placeholder="Escribe cualquier palabra para cambiar tu robot" oninput="app.updateProfileModalAvatarPreview()">
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="app.closeModal('modal-settings')">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="app.saveProfile()">Guardar Cambios</button>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Apodo / Nombre Visible</label>
-                <input type="text" id="profile-edit-name" class="form-control" placeholder="Tu alias">
+            <!-- TAB 2: PREGUNTAS DE RESPALDO DE SEGURIDAD -->
+            <div id="settings-tab-security" style="display: none;">
+                
+                <!-- Estado de respaldo actual -->
+                <div id="settings-security-status-box" style="padding: 12px 14px; border-radius: 12px; margin-bottom: 16px; font-size: 0.825rem; line-height: 1.45;"></div>
+
+                <!-- Alert de feedback -->
+                <div id="settings-security-alert" class="hidden" style="border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; font-size: 0.85rem;"></div>
+
+                <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.4;">
+                    Si olvidas tu contraseña secreta, podrás recuperar tu cuenta respondiendo exactamente a estas 2 preguntas:
+                </p>
+
+                <div class="form-group">
+                    <label class="form-label">Pregunta Secreta 1</label>
+                    <select id="settings-security-q1" class="form-control" required>
+                        <option value="" disabled selected>Selecciona tu primera pregunta...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Respuesta Secreta 1</label>
+                    <input type="text" id="settings-security-a1" class="form-control" placeholder="Escribe tu respuesta secreta 1" autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Pregunta Secreta 2</label>
+                    <select id="settings-security-q2" class="form-control" required>
+                        <option value="" disabled selected>Selecciona tu segunda pregunta...</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label class="form-label">Respuesta Secreta 2</label>
+                    <input type="text" id="settings-security-a2" class="form-control" placeholder="Escribe tu respuesta secreta 2" autocomplete="off">
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                    <button type="button" class="btn btn-secondary" onclick="app.closeModal('modal-settings')">Cancelar</button>
+                    <button type="button" id="btn-save-security" class="btn btn-primary" onclick="app.saveSecurityQuestions()">
+                        Guardar Respaldo
+                    </button>
+                </div>
             </div>
-            <div class="form-group">
-                <label class="form-label">Mensaje de Estado</label>
-                <input type="text" id="profile-edit-status" class="form-control" placeholder="ej: En misión confidencial">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Foto de Perfil (Link directo a Imagen)</label>
-                <input type="url" id="profile-edit-avatar-url" class="form-control" placeholder="https://ejemplo.com/mi-foto.jpg" oninput="app.updateProfileModalAvatarPreview()">
-                <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; display: block;">Debe ser un enlace directo a una imagen (que termine en .jpg, .png o de Unsplash/Imgur). Si falla, usará el robot automático.</span>
-            </div>
-            <div class="form-group">
-                <label class="form-label">O generar Robot con Palabra Clave (Semilla)</label>
-                <input type="text" id="profile-edit-seed" class="form-control" placeholder="Escribe cualquier palabra para cambiar tu robot" oninput="app.updateProfileModalAvatarPreview()">
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" onclick="app.closeModal('modal-profile-edit')">Cancelar</button>
-            <button type="button" class="btn btn-primary" onclick="app.saveProfile()">Guardar Cambios</button>
+
         </div>
     </div>
 </div>
@@ -351,6 +436,7 @@
 @section('scripts')
 <script>
     window.REVERB_APP_KEY = "{{ env('REVERB_APP_KEY', 'ralp37ndeim3xxs252fq') }}";
+    window.SECURITY_QUESTIONS = @json(\App\Http\Controllers\AuthController::SECURITY_QUESTIONS);
 </script>
 <script src="{{ asset('js/chat-app.js') }}?v={{ time() }}"></script>
 @endsection

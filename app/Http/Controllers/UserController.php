@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -88,6 +89,40 @@ class UserController extends Controller
                 'avatar_url' => $user->avatar_url,
                 'status_message' => $user->status_message,
             ],
+        ]);
+    }
+
+    /**
+     * Update security recovery questions for authenticated user.
+     */
+    public function updateSecurityQuestions(Request $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        $data = $request->validate([
+            'security_question_1' => ['required', 'string', 'max:255'],
+            'security_answer_1' => ['required', 'string', 'min:2', 'max:255'],
+            'security_question_2' => ['required', 'string', 'max:255', 'different:security_question_1'],
+            'security_answer_2' => ['required', 'string', 'min:2', 'max:255'],
+        ], [
+            'security_question_2.different' => 'Debes elegir dos preguntas de seguridad distintas.',
+            'security_answer_1.required' => 'Debes ingresar una respuesta para la primera pregunta.',
+            'security_answer_2.required' => 'Debes ingresar una respuesta para la segunda pregunta.',
+            'security_answer_1.min' => 'La respuesta 1 debe tener al menos 2 caracteres.',
+            'security_answer_2.min' => 'La respuesta 2 debe tener al menos 2 caracteres.',
+        ]);
+
+        $user->update([
+            'security_question_1' => $data['security_question_1'],
+            'security_answer_1' => Hash::make(mb_strtolower(trim($data['security_answer_1']))),
+            'security_question_2' => $data['security_question_2'],
+            'security_answer_2' => Hash::make(mb_strtolower(trim($data['security_answer_2']))),
+        ]);
+
+        return response()->json([
+            'message' => 'Preguntas de seguridad configuradas exitosamente',
+            'user' => $user->fresh(),
         ]);
     }
 

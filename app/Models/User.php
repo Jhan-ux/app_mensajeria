@@ -53,6 +53,7 @@ class User extends Authenticatable
     protected $appends = [
         'name',
         'avatar_url',
+        'has_security_questions',
     ];
 
     /**
@@ -87,6 +88,15 @@ class User extends Authenticatable
         }
 
         return 'https://api.dicebear.com/7.x/bottts-neutral/svg?seed='.urlencode($this->username);
+    }
+
+    /**
+     * Determine if the user has configured security recovery questions.
+     */
+    public function getHasSecurityQuestionsAttribute(): bool
+    {
+        return ! empty($this->security_question_1) && ! empty($this->security_answer_1)
+            && ! empty($this->security_question_2) && ! empty($this->security_answer_2);
     }
 
     /**
