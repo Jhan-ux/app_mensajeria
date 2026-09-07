@@ -2,13 +2,66 @@
 
 @section('title', 'Acceso Anónimo')
 
+@section('styles')
+<style>
+    .auth-container {
+        min-height: 100vh;
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        padding-top: calc(20px + env(safe-area-inset-top, 0px));
+        padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+        background: radial-gradient(circle at 50% 25%, #181818 0%, #101010 100%);
+    }
+    .auth-card {
+        width: 100%;
+        max-width: 440px;
+        background: #151515;
+        border: 1px solid rgba(227, 219, 204, 0.14);
+        border-radius: 20px;
+        box-shadow: 0 24px 48px rgba(0,0,0,0.7);
+        overflow: hidden;
+        backdrop-filter: blur(16px);
+    }
+    .auth-banner {
+        padding: 30px 28px 22px;
+        text-align: center;
+        border-bottom: 1px solid rgba(227, 219, 204, 0.1);
+        background: rgba(227, 219, 204, 0.02);
+    }
+    .auth-body {
+        padding: 28px;
+    }
+    @media (max-width: 480px) {
+        .auth-container {
+            padding: 12px;
+        }
+        .auth-card {
+            border-radius: 16px;
+        }
+        .auth-banner {
+            padding: 22px 18px 16px;
+        }
+        .auth-banner img {
+            height: 64px !important;
+        }
+        .auth-banner h1 {
+            font-size: 1.65rem !important;
+        }
+        .auth-body {
+            padding: 20px 16px;
+        }
+    }
+</style>
+@endsection
+
 @section('content')
-<div class="min-h-screen flex items-center justify-center p-4" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; background: radial-gradient(circle at 50% 25%, #181818 0%, #101010 100%);">
-    
-    <div style="width: 100%; max-width: 440px; background: #151515; border: 1px solid rgba(227, 219, 204, 0.14); border-radius: 20px; box-shadow: 0 24px 48px rgba(0,0,0,0.7); overflow: hidden; backdrop-filter: blur(16px);">
-        
+<div class="auth-container">
+    <div class="auth-card">
         <!-- Header Banner -->
-        <div style="padding: 30px 28px 22px; text-align: center; border-bottom: 1px solid rgba(227, 219, 204, 0.1); background: rgba(227, 219, 204, 0.02);">
+        <div class="auth-banner">
             <div style="margin: 0 auto 10px; display: flex; align-items: center; justify-content: center;">
                 <img src="{{ asset('images/logo.png') }}" alt="Enigma Logo" style="height: 76px; width: auto; max-width: 170px; object-fit: contain; filter: drop-shadow(0 0 20px rgba(227, 219, 204, 0.25));">
             </div>
@@ -26,7 +79,7 @@
             </button>
         </div>
 
-        <div style="padding: 28px;">
+        <div class="auth-body">
             
             @if ($errors->any())
                 <div style="background: rgba(224, 108, 117, 0.12); border: 1px solid rgba(224, 108, 117, 0.4); border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; font-size: 0.85rem; color: #fca5a5;">

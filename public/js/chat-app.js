@@ -182,10 +182,14 @@ class AnonymousChatApp {
             }).join('');
     }
 
-    async selectConversation(conversationId) {
+    async selectConversation(conversationId, updateHistory = true) {
         this.activeConversationId = conversationId;
         document.querySelector('.chat-app-container')?.classList.add('chat-selected');
         
+        if (updateHistory && window.innerWidth <= 768) {
+            history.pushState({ chat: conversationId }, '', `#chat-${conversationId}`);
+        }
+
         // Limpiar reply y previews
         this.cancelReply();
         this.cancelAttachment();
@@ -220,21 +224,21 @@ class AnonymousChatApp {
 
         headerEl.innerHTML = `
             <div class="chat-target-info">
-                <button class="btn-icon mobile-back-btn" onclick="app.deselectConversation()">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                <button type="button" class="btn-icon mobile-back-btn" onclick="app.deselectConversation()" title="Volver a la lista">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                 </button>
-                <div class="avatar-wrapper" style="width: 44px; height: 44px;">
+                <div class="avatar-wrapper" style="width: 40px; height: 40px;">
                     <img src="${conv.avatar}" alt="Avatar" class="avatar-img" onerror="this.onerror=null; this.src='https://api.dicebear.com/7.x/bottts-neutral/svg?seed=' + encodeURIComponent('${this.escapeHtml(conv.title || 'user')}');">
                     ${conv.type === 'direct' ? `<span class="badge ${isOnline ? 'badge-online' : 'badge-offline'} status-dot"></span>` : ''}
                 </div>
-                <div>
+                <div style="min-width: 0;">
                     <div class="chat-target-name">${this.escapeHtml(conv.title)}</div>
                     <div class="chat-target-status ${isOnline ? 'online' : ''}">${this.escapeHtml(statusText)}</div>
                 </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 4px;">
                 <button class="btn-icon" title="Buscar en el chat" onclick="alert('Función de búsqueda rápida activada')">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                 </button>
             </div>
         `;
@@ -244,11 +248,15 @@ class AnonymousChatApp {
         document.getElementById('active-chat-container')?.classList.remove('hidden');
     }
 
-    deselectConversation() {
+    deselectConversation(updateHistory = true) {
         this.activeConversationId = null;
         document.querySelector('.chat-app-container')?.classList.remove('chat-selected');
         document.getElementById('empty-chat-state')?.classList.remove('hidden');
         document.getElementById('active-chat-container')?.classList.add('hidden');
+
+        if (updateHistory && window.location.hash.startsWith('#chat-')) {
+            history.pushState(null, '', window.location.pathname);
+        }
     }
 
     async loadMessages(conversationId) {
@@ -365,7 +373,10 @@ class AnonymousChatApp {
         }
 
         // Limpiar inputs
-        if (textarea) textarea.value = '';
+        if (textarea) {
+            textarea.value = '';
+            textarea.style.height = 'auto';
+        }
         this.cancelReply();
         this.cancelAttachment();
 
@@ -829,6 +840,12 @@ class AnonymousChatApp {
                     this.emitTyping();
                 }
             });
+
+            // Auto-expansión dinámica del textarea al escribir
+            textarea.addEventListener('input', () => {
+                textarea.style.height = 'auto';
+                textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+            });
         }
 
         const searchInput = document.getElementById('sidebar-search-input');
@@ -837,6 +854,22 @@ class AnonymousChatApp {
                 this.renderConversationsList();
             });
         }
+
+        // Navegación fluida con botón atrás / gestos en dispositivos móviles
+        window.addEventListener('popstate', () => {
+            if (this.activeConversationId && window.innerWidth <= 768) {
+                this.deselectConversation(false);
+            }
+        });
+
+        // Cerrar modales con tecla Escape
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-backdrop.open').forEach(modal => {
+                    modal.classList.remove('open');
+                });
+            }
+        });
     }
 
     playNotificationSound() {
