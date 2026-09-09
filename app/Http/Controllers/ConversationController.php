@@ -207,12 +207,16 @@ class ConversationController extends Controller
 
         $recipientIds = $conversation->users->pluck('id')->all();
 
-        broadcast(new ConversationUpdated(
-            conversationId: $conversation->id,
-            action: 'ephemeral_changed',
-            data: ['ephemeral_timer' => $timer],
-            recipientUserIds: $recipientIds
-        ))->toOthers();
+        try {
+            broadcast(new ConversationUpdated(
+                conversationId: $conversation->id,
+                action: 'ephemeral_changed',
+                data: ['ephemeral_timer' => $timer],
+                recipientUserIds: $recipientIds
+            ))->toOthers();
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         return response()->json([
             'message' => 'Temporizador de mensajes efímeros actualizado',
@@ -253,20 +257,24 @@ class ConversationController extends Controller
 
         $recipientIds = $conversation->users()->pluck('users.id')->all();
 
-        broadcast(new ConversationUpdated(
-            conversationId: $conversation->id,
-            action: 'member_added',
-            data: [
-                'user' => [
-                    'id' => $targetUser->id,
-                    'username' => $targetUser->username,
-                    'name' => $targetUser->name,
-                    'avatar_url' => $targetUser->avatar_url,
-                    'role' => 'member',
+        try {
+            broadcast(new ConversationUpdated(
+                conversationId: $conversation->id,
+                action: 'member_added',
+                data: [
+                    'user' => [
+                        'id' => $targetUser->id,
+                        'username' => $targetUser->username,
+                        'name' => $targetUser->name,
+                        'avatar_url' => $targetUser->avatar_url,
+                        'role' => 'member',
+                    ],
                 ],
-            ],
-            recipientUserIds: $recipientIds
-        ))->toOthers();
+                recipientUserIds: $recipientIds
+            ))->toOthers();
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         return response()->json([
             'message' => "@{$targetUser->username} añadido al grupo",
@@ -308,12 +316,16 @@ class ConversationController extends Controller
         $recipientIds = $conversation->users()->pluck('users.id')->all();
         $recipientIds[] = $userId; // Notify the kicked user too
 
-        broadcast(new ConversationUpdated(
-            conversationId: $conversation->id,
-            action: 'member_removed',
-            data: ['user_id' => $userId],
-            recipientUserIds: $recipientIds
-        ))->toOthers();
+        try {
+            broadcast(new ConversationUpdated(
+                conversationId: $conversation->id,
+                action: 'member_removed',
+                data: ['user_id' => $userId],
+                recipientUserIds: $recipientIds
+            ))->toOthers();
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         return response()->json(['message' => 'Miembro expulsado del grupo']);
     }
@@ -358,12 +370,16 @@ class ConversationController extends Controller
 
         $recipientIds = $conversation->users()->pluck('users.id')->all();
 
-        broadcast(new ConversationUpdated(
-            conversationId: $conversation->id,
-            action: 'member_left',
-            data: ['user_id' => $currentUser->id],
-            recipientUserIds: $recipientIds
-        ))->toOthers();
+        try {
+            broadcast(new ConversationUpdated(
+                conversationId: $conversation->id,
+                action: 'member_left',
+                data: ['user_id' => $currentUser->id],
+                recipientUserIds: $recipientIds
+            ))->toOthers();
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         return response()->json(['message' => 'Has salido del grupo']);
     }
@@ -408,16 +424,20 @@ class ConversationController extends Controller
 
         $recipientIds = $conversation->users()->pluck('users.id')->all();
 
-        broadcast(new ConversationUpdated(
-            conversationId: $conversation->id,
-            action: 'info_updated',
-            data: [
-                'title' => $conversation->title,
-                'description' => $conversation->description,
-                'avatar' => $conversation->getAvatarFor($currentUser),
-            ],
-            recipientUserIds: $recipientIds
-        ))->toOthers();
+        try {
+            broadcast(new ConversationUpdated(
+                conversationId: $conversation->id,
+                action: 'info_updated',
+                data: [
+                    'title' => $conversation->title,
+                    'description' => $conversation->description,
+                    'avatar' => $conversation->getAvatarFor($currentUser),
+                ],
+                recipientUserIds: $recipientIds
+            ))->toOthers();
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         return response()->json([
             'message' => 'Información del grupo actualizada',

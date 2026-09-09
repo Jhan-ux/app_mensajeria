@@ -38,6 +38,10 @@
         }
     </script>
 
+    <!-- Laravel Echo & Pusher JS CDN para tiempo real -->
+    <script src="https://cdn.jsdelivr.net/npm/pusher-js@8.4.0-rc2/dist/web/pusher.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
+
     <!-- Scripts compartidos -->
     @yield('scripts')
 </body>

@@ -139,8 +139,12 @@ class MessageController extends Controller
             'reactions.user:id,username,display_name',
         ]);
 
-        // Broadcast real-time event via Laravel Reverb
-        broadcast(new MessageSent($message))->toOthers();
+        // Broadcast real-time event via Laravel Reverb (safely guarded)
+        try {
+            broadcast(new MessageSent($message))->toOthers();
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         // Update sender's last read id
         $this->markConversationAsRead($conversation, $user, $message->id, false);
@@ -208,14 +212,18 @@ class MessageController extends Controller
         $summary = $this->buildReactionsSummary($message->fresh('reactions.user'), $user);
 
         // Broadcast event
-        broadcast(new MessageReacted(
-            conversationId: $message->conversation_id,
-            messageId: $message->id,
-            userId: $user->id,
-            emoji: $emoji,
-            action: $action,
-            reactionsSummary: $summary,
-        ))->toOthers();
+        try {
+            broadcast(new MessageReacted(
+                conversationId: $message->conversation_id,
+                messageId: $message->id,
+                userId: $user->id,
+                emoji: $emoji,
+                action: $action,
+                reactionsSummary: $summary,
+            ))->toOthers();
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         return response()->json([
             'action' => $action,
@@ -248,12 +256,16 @@ class MessageController extends Controller
         $messageData = $newPinned ? $this->formatMessagePayload($message->fresh(['sender', 'pinnedBy']), $user) : null;
 
         // Broadcast pin event
-        broadcast(new MessagePinnedEvent(
-            conversationId: $message->conversation_id,
-            messageId: $message->id,
-            isPinned: $newPinned,
-            messageData: $messageData,
-        ))->toOthers();
+        try {
+            broadcast(new MessagePinnedEvent(
+                conversationId: $message->conversation_id,
+                messageId: $message->id,
+                isPinned: $newPinned,
+                messageData: $messageData,
+            ))->toOthers();
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         return response()->json([
             'is_pinned' => $newPinned,
@@ -329,7 +341,11 @@ class MessageController extends Controller
         ]);
 
         if ($shouldBroadcast) {
-            broadcast(new MessageRead($conversation->id, $user->id, $lastMessageId))->toOthers();
+            try {
+                broadcast(new MessageRead($conversation->id, $user->id, $lastMessageId))->toOthers();
+            } catch (\Throwable $e) {
+                report($e);
+            }
         }
     }
 

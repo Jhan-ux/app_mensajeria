@@ -1044,13 +1044,14 @@ class AnonymousChatApp {
     initWebSockets() {
         try {
             if (window.Pusher && window.Echo) {
+                const isHttps = window.location.protocol === 'https:';
                 this.echo = new window.Echo({
                     broadcaster: 'reverb',
-                    key: window.REVERB_APP_KEY || 'ralp37ndeim3xxs252fq',
+                    key: window.REVERB_APP_KEY || 'enigma-prod-key-2026',
                     wsHost: window.location.hostname,
-                    wsPort: 8080,
-                    wssPort: 8080,
-                    forceTLS: false,
+                    wsPort: isHttps ? 443 : 8080,
+                    wssPort: isHttps ? 443 : 8080,
+                    forceTLS: isHttps,
                     enabledTransports: ['ws', 'wss'],
                     authEndpoint: '/broadcasting/auth',
                     csrfToken: this.csrfToken,
@@ -1082,13 +1083,12 @@ class AnonymousChatApp {
                             }
                         });
                 }
-            } else {
-                this.startPollingFallback();
             }
         } catch (e) {
-            console.warn('WebSockets no disponibles, activando modo polling fallback:', e);
-            this.startPollingFallback();
+            console.warn('WebSockets conectando con fallback:', e);
         }
+        // Always run polling fallback as continuous background synchronization
+        this.startPollingFallback();
     }
 
     subscribeToConversationChannel(conversationId) {
