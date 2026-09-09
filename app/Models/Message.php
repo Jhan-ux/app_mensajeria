@@ -21,6 +21,12 @@ class Message extends Model
         'file_size',
         'reply_to_id',
         'is_deleted',
+        'expires_at',
+        'view_once',
+        'viewed_at',
+        'is_pinned',
+        'pinned_at',
+        'pinned_by',
     ];
 
     protected $appends = [
@@ -33,6 +39,11 @@ class Message extends Model
             'body' => 'encrypted',
             'file_size' => 'integer',
             'is_deleted' => 'boolean',
+            'view_once' => 'boolean',
+            'is_pinned' => 'boolean',
+            'expires_at' => 'datetime',
+            'viewed_at' => 'datetime',
+            'pinned_at' => 'datetime',
         ];
     }
 
@@ -78,5 +89,21 @@ class Message extends Model
     public function receipts(): HasMany
     {
         return $this->hasMany(MessageReceipt::class);
+    }
+
+    /**
+     * Reactions to this message.
+     */
+    public function reactions(): HasMany
+    {
+        return $this->hasMany(MessageReaction::class);
+    }
+
+    /**
+     * User that pinned this message.
+     */
+    public function pinnedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'pinned_by');
     }
 }

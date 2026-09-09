@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Conversation;
+use App\Models\Message;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -139,5 +143,87 @@ class UserController extends Controller
         ]);
 
         return response()->json(['status' => 'online']);
+    }
+
+    /**
+     * Danger Zone: Permanently destroy user account and all trace of data.
+     */
+    public function destroyAccount(Request $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        $request->validate([
+            'password' => ['required', 'string'],
+        ]);
+
+        if (! Hash::check($request->input('password'), $user->password)) {
+            return response()->json(['message' => 'Contraseña incorrecta. Purga cancelada por seguridad.'], 422);
+        }
+
+        $userId = $user->id;
+        $userAvatar = $user->avatar;
+
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        DB::transaction(function () use ($userId, $userAvatar) {
+            // 1. Delete user files / attachments from storage
+            $messages = Message::where('sender_id', $userId)->whereNotNull('file_path')->get();
+            foreach ($messages as $msg) {
+                if ($msg->file_path && Storage::disk('public')->exists($msg->file_path)) {
+                    Storage::disk('public')->delete($msg->file_path);
+                }
+            }
+
+            // 2. Delete avatar if local
+            if ($userAvatar && ! str_starts_with($userAvatar, 'http') && Storage::disk('public')->exists($userAvatar)) {
+                Storage::disk('public')->delete($userAvatar);
+            }
+
+            // 3. Delete direct conversations where user is participant
+            $directConvIds = DB::table('conversation_user')
+                ->join('conversations', 'conversations.id', '=', 'conversation_user.conversation_id')
+                ->where('conversation_user.user_id', $userId)
+                ->where('conversations.type', 'direct')
+                ->pluck('conversations.id');
+
+            foreach ($directConvIds as $convId) {
+                $convMessages = Message::where('conversation_id', $convId)->whereNotNull('file_path')->get();
+                foreach ($convMessages as $m) {
+                    if ($m->file_path && Storage::disk('public')->exists($m->file_path)) {
+                        Storage::disk('public')->delete($m->file_path);
+                    }
+                }
+                Conversation::where('id', $convId)->delete();
+            }
+
+            // 4. Detach from groups and clean empty groups
+            $groupConvIds = DB::table('conversation_user')
+                ->join('conversations', 'conversations.id', '=', 'conversation_user.conversation_id')
+                ->where('conversation_user.user_id', $userId)
+                ->where('conversations.type', 'group')
+                ->pluck('conversations.id');
+
+            foreach ($groupConvIds as $groupId) {
+                DB::table('conversation_user')
+                    ->where('conversation_id', $groupId)
+                    ->where('user_id', $userId)
+                    ->delete();
+
+                if (DB::table('conversation_user')->where('conversation_id', $groupId)->count() === 0) {
+                    Conversation::where('id', $groupId)->delete();
+                }
+            }
+
+            // 5. Delete user record
+            User::where('id', $userId)->delete();
+        });
+
+        return response()->json([
+            'message' => 'Tu cuenta y todos sus datos han sido purgados y destruidos permanentemente.',
+            'redirect' => route('login'),
+        ]);
     }
 }

@@ -41,9 +41,24 @@ Route::middleware('auth')->group(function () {
         Route::post('/conversations', [ConversationController::class, 'store'])->name('api.conversations.store');
         Route::get('/conversations/{id}', [ConversationController::class, 'show'])->name('api.conversations.show');
 
+        // Messages & Interactions
         Route::get('/conversations/{id}/messages', [MessageController::class, 'index'])->name('api.messages.index');
         Route::post('/conversations/{id}/messages', [MessageController::class, 'store'])->middleware('throttle:messages')->name('api.messages.store');
         Route::post('/conversations/{id}/read', [MessageController::class, 'markAsRead'])->name('api.messages.read');
         Route::delete('/messages/{id}', [MessageController::class, 'destroy'])->name('api.messages.destroy');
+        Route::post('/messages/{id}/react', [MessageController::class, 'toggleReaction'])->name('api.messages.react');
+        Route::post('/messages/{id}/pin', [MessageController::class, 'togglePin'])->name('api.messages.pin');
+        Route::post('/messages/{id}/view-once', [MessageController::class, 'consumeViewOnce'])->name('api.messages.view_once');
+
+        // Conversation management & Search
+        Route::get('/conversations/{id}/search', [ConversationController::class, 'searchMessages'])->name('api.conversations.search');
+        Route::post('/conversations/{id}/ephemeral', [ConversationController::class, 'setEphemeralTimer'])->name('api.conversations.ephemeral');
+        Route::post('/conversations/{id}/members', [ConversationController::class, 'addMember'])->name('api.conversations.members.add');
+        Route::delete('/conversations/{id}/members/{userId}', [ConversationController::class, 'removeMember'])->name('api.conversations.members.remove');
+        Route::post('/conversations/{id}/leave', [ConversationController::class, 'leaveGroup'])->name('api.conversations.leave');
+        Route::put('/conversations/{id}/info', [ConversationController::class, 'updateInfo'])->name('api.conversations.info');
+
+        // Danger Zone: Total Purge
+        Route::delete('/account/destroy', [UserController::class, 'destroyAccount'])->name('api.account.destroy');
     });
 });

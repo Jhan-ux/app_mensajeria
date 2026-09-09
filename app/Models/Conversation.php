@@ -17,8 +17,17 @@ class Conversation extends Model
         'type',
         'title',
         'avatar',
+        'description',
+        'ephemeral_timer',
         'created_by',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'ephemeral_timer' => 'integer',
+        ];
+    }
 
     /**
      * Users participating in this conversation.
@@ -44,6 +53,14 @@ class Conversation extends Model
     public function messages(): HasMany
     {
         return $this->hasMany(Message::class);
+    }
+
+    /**
+     * Pinned messages in this conversation.
+     */
+    public function pinnedMessages(): HasMany
+    {
+        return $this->hasMany(Message::class)->where('is_pinned', true)->orderBy('pinned_at', 'desc');
     }
 
     /**
